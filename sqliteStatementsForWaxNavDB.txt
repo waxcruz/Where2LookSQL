@@ -1,0 +1,30 @@
+SQL Statements for waxnav.db
+
+(base) waxmac:WaxNavDatabase waxcruz$ sqlite3 waxnav.db
+SQLite version 3.30.1 2019-10-10 20:19:45
+Enter ".help" for usage hints.
+sqlite> .schema locations
+CREATE TABLE IF NOT EXISTS "locations"(
+	"location" Text NOT NULL,
+	"latitude" Double NOT NULL,
+	"longitude" Double NOT NULL,
+	"featureClass" Text NOT NULL,
+	"elevation" Double NOT NULL,
+	"state" Text NOT NULL);
+sqlite> 
+
+Index by state
+sqlite> create index states on locations(state);
+
+Import GIS
+sqlite> .separator "\t"
+sqlite> .import geoSQLWithState.tsv locations
+
+
+FTS5
+create virtual table point  using fts5(locationRowID UNINDEXED, location);
+insert into point select rowid, location from locations;
+
+Verify FTS5
+select * from point p inner join locations l on l.rowid = p.locationRowID where point match 'sabino';
+
